@@ -1,0 +1,100 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+
+enum Role { USER ADMIN }
+enum DiscountType { PERCENT FIXED }
+enum OrderStatus { PENDING PAID SHIPPED CANCELLED }
+enum PaymentMethod { COD RAZORPAY }
+
+model User {
+  id           String   @id @default(cuid())
+  name         String?
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  wishlist      WishlistItem[]
+  cartItems     CartItem[]
+  orders        Order[]
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  products  Product[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String
+  pricePaise  Int
+  stock       Int      @default(0)
+  images      String[] @default([])
+  createdAt   DateTime @default(now())
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  wishlistItems WishlistItem[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+}
+
+model Discount {
+  id         String       @id @default(cuid())
+  name       String
+  type       DiscountType
+  value      Int
+  couponCode String?      @unique
+  active     Boolean      @default(true)
+  startsAt   DateTime?
+  endsAt     DateTime?
+  categoryId String?
+  productId  String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+  product    Product?  @relation(fields: [productId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model WishlistItem {
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  user      User    @relation(fields: [userId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+  @@id([userId, productId])
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  user      User    @relation(fields: [userId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+  @@unique([userId, productId])
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  userId        String
+  status        OrderStatus   @default(PENDING)
+  paymentMethod PaymentMethod
+  totalPaise    Int
+  createdAt     DateTime      @default(now())
+  user          User          @relation(fields: [userId], references: [id])
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id             String   @id @default(cuid())
+  orderId        String
+  productId      String
+  quantity       Int
+  unitPricePaise Int
+  order          Order    @relation(fields: [orderId], references: [id])
+  product        Product  @relation(fields: [productId], references: [id])
+}
