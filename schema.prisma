@@ -1,10 +1,28 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql" url = env("DATABASE_URL") }
-
-enum Role { USER ADMIN }
-enum DiscountType { PERCENT FIXED }
-enum OrderStatus { PENDING PAID SHIPPED CANCELLED }
-enum PaymentMethod { COD RAZORPAY }
+generator client {
+ provider = "prisma-client-js"
+}
+datasource db {
+ provider = "postgresql"
+ url      = env("DATABASE_URL")
+}
+enum Role {
+ USER
+ ADMIN
+}
+enum DiscountType {
+ PERCENT
+ FIXED
+}
+enum OrderStatus {
+ PENDING
+ PAID
+ SHIPPED
+ CANCELLED
+}
+enum PaymentMethod {
+ COD
+ RAZORPAY
+}
 
 model User {
   id           String   @id @default(cuid())
